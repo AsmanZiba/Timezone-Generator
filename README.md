@@ -64,7 +64,8 @@ You can change the tzdata version by editing:
 `VERSION=2025b`
 
 Other options:
-- Modify build and output paths 
+- Modify build and output paths
+  
 **Note: Modify Only Version Variable. It is better not to change the other variables.**
 ---
 
@@ -72,19 +73,9 @@ Other options:
 
 [-IANA Time Zone Database](https://www.iana.org/time-zones)
 
-[Time Zone Fixer](https://github.com/mcornejo/TimeZoneFixer)
+[-Time Zone Fixer](https://github.com/mcornejo/TimeZoneFixer)
 
 ---
-
-🧑‍💻 Author
-
-Developed by Asman — blending scripting precision with system-level insight.  
-Open to collaboration, feedback, and suggestions ✨
-
----
-
-<p align="center">Built with ❤️ for Termux, Linux & Android power users</p>
-`
 
 ## 🚀 Getting Started
 
@@ -94,14 +85,25 @@ install **Termux**:
 run 
 ```bash
 bash generator.sh
-
+```
 Example (with root):
 
 ```bash
 su -c cp zoneinfo.dat zoneinfo.idx zoneinfo.version /system/usr/share/zoneinfo/
-
+```
 **For Linux (Debian/Ubuntu):**
 only run
 ```bash
 bash generator.sh
+```
+---
+
+🧑‍💻 Author
+
+Developed by Asman — blending scripting precision with system-level insight.  
+Open to collaboration, feedback, and suggestions ✨
+
+
+<p align="center">Built with ❤️ for Termux, Linux & Android power users</p>
+`
 
