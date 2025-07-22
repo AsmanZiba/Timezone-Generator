@@ -19,7 +19,6 @@ Smart, portable compiler for IANA timezones — powered by Bash and Java. Runs o
 - 📤 Configurable output paths (/sdcard for Termux, local for Linux)
 - 🔁 Customizable tzdata version via script
 - 📄 Generates structured setup file using Zone and Link directives
-- Run bash script and generate standard time zone file for linux base operation systems.
 - 🛡️ Lightweight and dependency-aware install script
 - 💬 Interactive output and error handling
 
@@ -29,8 +28,7 @@ Android Support
 You can build timezone files directly in Android using Termux.  
 If your device is rooted, output files can be copied to:
 
-```bash
-/system/usr/share/zoneinfo/
+`/system/usr/share/zoneinfo/`
 
 > ⚠️ Root access is required to write to this system directory.  
 > Use with caution and ensure backups before replacing timezone files.
@@ -41,12 +39,11 @@ If your device is rooted, output files can be copied to:
 
 | File/Folder         | Description                              |
 |---------------------|------------------------------------------|
-| compile-tzdata.sh | Main script to download, extract & build |
+| generator.sh | Main script to download, extract & build |
 | ZoneCompactor.java| Compacts zoneinfo from setup file        |
 | ZoneInfo.java     | Handles zoneinfo structures              |
 | zones/            | Final output directory                   |
 | setup             | Auto-generated zone configuration        |
-| zoneinfo.*        | Binary output files (for deployment)     |
 
 🧠 Environment Support
 
@@ -64,22 +61,18 @@ Automatic detection ensures scripts behave appropriately per environment.
 
 You can change the tzdata version by editing:
 
-`bash
-VERSION=2025b
-`
+`VERSION=2025b`
 
 Other options:
-- Modify output paths
-- Replace or extend Java logic for filtering
-- Add install flags like --force to automate overwrites
-
+- Modify build and output paths 
+**Note: Modify Only Version Variable. It is better not to change the other variables.**
 ---
 
 📚 References
 
-- IANA Time Zone Database
-- tzdata GitHub Repository
-- Java TimeZone Class
+[-IANA Time Zone Database](https://www.iana.org/time-zones)
+
+[Time Zone Fixer](https://github.com/mcornejo/TimeZoneFixer)
 
 ---
 
@@ -99,15 +92,16 @@ Open to collaboration, feedback, and suggestions ✨
  **With Android**
 install **Termux**:
 run 
-`bash
+```bash
 bash generator.sh
-`
+
 Example (with root):
 
-`bash
+```bash
 su -c cp zoneinfo.dat zoneinfo.idx zoneinfo.version /system/usr/share/zoneinfo/
-`
+
 **For Linux (Debian/Ubuntu):**
-`bash
+only run
+```bash
 bash generator.sh
-`
+
