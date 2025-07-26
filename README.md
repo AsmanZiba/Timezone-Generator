@@ -28,7 +28,17 @@ Android Support
 You can build timezone files directly in Android using Termux.  
 If your device is rooted, output files can be copied to:
 
-`/system/usr/share/zoneinfo/`
+**Old Android Version 9 and lower**
+
+`
+/system/usr/share/zoneinfo/
+`
+
+**New Android Version 10 And Upper**
+
+`
+/system/apex/com.android.tzdata/etc/tz/
+`
 
 > ⚠️ Root access is required to write to this system directory.  
 > Use with caution and ensure backups before replacing timezone files.
