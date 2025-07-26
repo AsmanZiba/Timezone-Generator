@@ -90,8 +90,10 @@ Other options:
 ## 🚀 Getting Started
 
 ### Usage
- **With Android**
+ **For Android**
+ 
 install **Termux**:
+
 run 
 ```bash
 bash generator.sh
@@ -102,6 +104,7 @@ Example (with root):
 su -c cp zoneinfo.dat zoneinfo.idx zoneinfo.version /system/usr/share/zoneinfo/
 ```
 **For Linux (Debian/Ubuntu):**
+
 only run
 ```bash
 bash generator.sh
@@ -115,5 +118,5 @@ Open to collaboration, feedback, and suggestions ✨
 
 
 <p align="center">Built with ❤️ for Termux, Linux & Android power users</p>
-`
+
 
