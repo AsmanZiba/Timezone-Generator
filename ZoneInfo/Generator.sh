@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # 🌐 Set tzdb version
 VERSION=2025b
 URL="https://data.iana.org/time-zones/releases/tzdb-${VERSION}.tar.lz"
@@ -95,4 +97,4 @@ else
   echo "✅ Output saved in $ZONEDIR"
 fi
 
-echo "🎉 Build complete!"
+echo "🎉 Build complete."
