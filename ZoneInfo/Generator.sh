@@ -2,27 +2,29 @@
 
 set -e
 
-# 🌐 Set tzdb version
+#🌐 Set tzdb version and download URL
 VERSION=2025b
 URL="https://data.iana.org/time-zones/releases/tzdb-${VERSION}.tar.lz"
 
-# 📁 Define working directories
+#📁 Define working directories
+SCRIPTDIR="$(pwd)/TzData"
 WORKDIR="$HOME/tzwork"
 SRCDIR="$WORKDIR/tzdb-${VERSION}"
 ZONEDIR="$WORKDIR/zones"
-SCRIPT_DIR="$(pwd)"
 
-# 🧠 Detect environment
+#🧠 Detect environment: Termux or Linux
 if command -v termux-info >/dev/null 2>&1; then
   ENV="termux"
+  OUTPUTDIR="/sdcard/TimezoneFiles"
 else
   ENV="linux"
+  OUTPUTDIR="/usr/share/zoneinfo"
 fi
 
-echo "🧠 Environment detected: $ENV"
+echo "🔍 Environment detected: $ENV"
 
-# 🔧 Install dependencies
-echo "📦 Checking dependencies..."
+echo "🔧 Checking dependencies..."
+# List of essential tools
 TOOLS="curl lzip clang javac java awk grep"
 
 for tool in $TOOLS; do
@@ -33,16 +35,28 @@ for tool in $TOOLS; do
     elif command -v apt-get >/dev/null 2>&1; then
       sudo apt-get update && sudo apt-get install "$tool" -y
     else
-      echo "❌ Cannot install '$tool'. Please install it manually."
+      echo "⚠️ Cannot install '$tool'. Please install it manually."
       exit 1
     fi
   fi
 done
 
-# 📥 Download and extract tzdb
+# Special case: check for 'ar' (part of binutils)
+if ! command -v ar >/dev/null 2>&1; then
+  echo "⚠️ 'ar' is missing. Installing 'binutils'..."
+  if [ "$ENV" = "termux" ]; then
+    pkg install binutils -y
+  elif command -v apt-get >/dev/null 2>&1; then
+    sudo apt-get update && sudo apt-get install binutils -y
+  else
+    echo "⚠️ Cannot install 'binutils'. Please install it manually."
+    exit 1
+  fi
+fi
+
 echo "📥 Downloading tzdb-${VERSION}..."
 mkdir -p "$WORKDIR"
-cd "$WORKDIR" || exit
+cd "$WORKDIR"
 
 if [ ! -d "$SRCDIR" ]; then
   [ ! -f "tzdb-${VERSION}.tar.lz" ] && curl -O "$URL"
@@ -50,51 +64,56 @@ if [ ! -d "$SRCDIR" ]; then
   tar xf "tzdb-${VERSION}.tar"
 fi
 
-# 🔨 Compile zic
-cd "$SRCDIR" || exit
+#🛠 Compile zic (timezone compiler)
+cd "$SRCDIR"
 if [ "$ENV" = "termux" ]; then
-  echo "🛠️ Building zic with make (Termux)..."
+  echo "🛠 Building zic with make (Termux)..."
   make -C "$SRCDIR" CC="clang -std=c99"
-  ZIC="$SRCDIR/zic"
 else
-  echo "🛠️ Building zic with clang (Linux)..."
-  clang -std=c99 -O2 "$SRCDIR"/*.c -o "$SRCDIR/zic"
-  ZIC="$SRCDIR/zic"
+  echo "🛠 Building zic with clang (Linux)..."
+  clang -std=c99 -O2 *.c -o zic
 fi
+ZIC="$SRCDIR/zic"
 
-# 🌍 Generate zoneinfo files
-mkdir -p "$ZONEDIR"
-for file in africa antarctica asia australasia etcetera europe factory northamerica southamerica; do
-  [ -f "$file" ] && $ZIC -d "$ZONEDIR" "$file" || echo "⚠️ Missing tz source: $file"
+#📦 Generate .zi files from source
+TZFILES="africa antarctica asia australasia europe northamerica southamerica etcetera"
+
+for FORM in main vanguard rearguard; do
+    awk -v DATAFORM="$FORM" -f ziguard.awk $TZFILES | awk '!/^Link/' > "$FORM.zi"
 done
 
-cp "$SCRIPT_DIR"/ZoneCompactor.java "$SCRIPT_DIR"/ZoneInfo.java "$ZONEDIR"/
+#📦 Compile .zi files to zoneinfo
+mkdir -p "$ZONEDIR"
+$ZIC -d "$ZONEDIR" main.zi
+$ZIC -d "$ZONEDIR" vanguard.zi
+$ZIC -d "$ZONEDIR" rearguard.zi
 
-# 🧩 Build setup file inside zones
-echo "🧩 Generating setup file in $ZONEDIR..."
-(
-  cat $SRCDIR/* | grep '^Link' | awk '{print $1, $2, $3}'
-  (
-    cat $SRCDIR/* | grep '^Zone' | awk '{print $2}'
-    cat $SRCDIR/* | grep '^Link' | awk '{print $3}'
-  ) | LC_ALL="C" sort
-) | grep -v Riyadh8 > "$ZONEDIR/setup"
+echo "🧩 Generating setup file..."
+[ -f setup ] && rm setup
 
-echo "☕ Compiling Java files in $ZONEDIR..."
-cd "$ZONEDIR" || exit
+grep '^Link' $TZFILES | awk '{print "Link", $2, $3}' >> "$ZONEDIR/setup"
+{
+  grep '^Zone' $TZFILES | awk '{print $2}'
+  grep '^Link' $TZFILES | awk '{print $3}'
+} | sort -u >> "$ZONEDIR/setup"
+
+#Compile ZoneCompactor
+cp "$SCRIPTDIR"/ZoneCompactor.java "$SCRIPTDIR"/ZoneInfo.java "$ZONEDIR"/
+
+cd "$ZONEDIR"
+echo "🛠️ Compiling ZoneCompactor..."
 javac ZoneCompactor.java ZoneInfo.java
 
 echo "🚀 Running ZoneCompactor..."
 java ZoneCompactor setup .
-
+#Create tzdata Version
 echo "$VERSION" > zoneinfo.version
 
 if [ "$ENV" = "termux" ]; then
-  echo "📤 Result output to /sdcard/TimezoneFiles..."
-  mkdir -p /sdcard/TimezoneFiles
-  cp zoneinfo.dat zoneinfo.idx zoneinfo.version /sdcard/TimezoneFiles
+  echo "📦 Save output files to $OUTPUTDIR"
+  mkdir -p $OUTPUTDIR
+  cp zoneinfo.dat zoneinfo.idx zoneinfo.version $OUTPUTDIR
 else
-  echo "✅ Output saved in $ZONEDIR"
+  echo "✅ Output saved in $OUTPUTDIR"
+  cp -r Africa America Antarctica Asia Atlantic Australia Europe Etc GMT Indian Pacific $OUTPUTDIR
 fi
-
-echo "🎉 Build complete."

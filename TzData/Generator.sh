@@ -10,16 +10,15 @@ URL="https://data.iana.org/time-zones/releases/tzdb-${VERSION}.tar.lz"
 SCRIPTDIR="$(pwd)/TzData"
 WORKDIR="$HOME/tzwork"
 SRCDIR="$WORKDIR/tzdb-${VERSION}"
-#ZONEDIR="/sdcard/TimezoneFiles"
 ZONEDIR="$WORKDIR/zones"
 
 #🧠 Detect environment: Termux or Linux
 if command -v termux-info >/dev/null 2>&1; then
   ENV="termux"
-  OUTPUT_DIR="/sdcard/TimezoneFiles"
+  OUTPUTDIR="/sdcard/TimezoneFiles"
 else
   ENV="linux"
-  OUTPUTDIR="$SCRIPTDIR/zone"
+  OUTPUTDIR="/usr/share/zoneinfo"
 fi
 
 echo "🔍 Environment detected: $ENV"
@@ -77,7 +76,7 @@ fi
 ZIC="$SRCDIR/zic"
 
 #📦 Generate .zi files from source
-TZFILES="africa antarctica asia australasia europe factory northamerica southamerica etcetera backward"
+TZFILES="africa antarctica asia australasia europe northamerica southamerica etcetera"
 
 for FORM in main vanguard rearguard; do
     awk -v DATAFORM="$FORM" -f ziguard.awk $TZFILES | awk '!/^Link/' > "$FORM.zi"
@@ -89,36 +88,30 @@ $ZIC -d "$ZONEDIR" main.zi
 $ZIC -d "$ZONEDIR" vanguard.zi
 $ZIC -d "$ZONEDIR" rearguard.zi
 
-#🌍 Generate zoneinfo files
-#for file in $TZFILES; do
-#  [ -f "$file" ] && $ZIC -d "$ZONEDIR" #"$file" || echo "⚠️ Missing tz source: #$file"
-#done
-
-#📄 Generate setup file for ZoneCompactor
 echo "🧩 Generating setup file..."
+[ -f "$ZONEDIR/setup" ] && rm "$ZONEDIR/setup"
 
+grep '^Link' $TZFILES | awk '{print "Link", $2, $3}' >> "$ZONEDIR/setup"
 {
-  grep '^Link' $TZFILES | awk '{print $1, $2, $3}'
-  {
-    grep '^Zone' $TZFILES | awk '{print $2}'
-    grep '^Link' $TZFILES | awk '{print $3}'
-  } | sort -u
-} > "$ZONEDIR/setup"
+  grep '^Zone' $TZFILES | awk '{print $2}'
+  grep '^Link' $TZFILES | awk '{print $3}'
+} | sort -u >> "$ZONEDIR/setup"
 
 #Compile ZoneCompactor
-cp "$SCRIPTDIR"/ZoneCompactor.java "$ZONEDIR"/
+cp "$SCRIPTDIR"/ZoneCompactor.java "$ZONEDIR"
 
 cd "$ZONEDIR"
 echo "🛠️ Compiling ZoneCompactor..."
 javac ZoneCompactor.java
 
 echo "🚀 Running ZoneCompactor..."
-java ZoneCompactor setup . $SRCDIR/zone.tab . tzdata${VERSION}
+java ZoneCompactor setup . $SRCDIR/zone.tab . $VERSION
 
 if [ "$ENV" = "termux" ]; then
-  echo "📦 Save output files to /sdcard/TimezoneFiles..."
-  mkdir -p /sdcard/TimezoneFiles
-  cp tzdata /sdcard/TimezoneFiles
+  echo "📦 Save output files to $OUTPUTDIR"
+  mkdir -p $OUTPUTDIR
+  cp tzdata $OUTPUTDIR
 else
-  echo "✅ Output saved in $ZONEDIR"
+  echo "✅ Output saved in $OUTPUTDIR"
+  cp -r Africa America Antarctica Asia Atlantic Australia Europe Etc GMT Indian Pacific $OUTPUTDIR
 fi

@@ -23,6 +23,7 @@ Smart, portable compiler for IANA timezones — powered by Bash and Java. Runs o
 - 💬 Interactive output and error handling
 
 ---
+
 Android Support
 
 You can build timezone files directly in Android using Termux.  
@@ -30,40 +31,25 @@ If your device is rooted, output files can be copied to:
 
 **Old Android Version 9 and lower**
 
-`
-/system/usr/share/zoneinfo/
-`
+`/system/usr/share/zoneinfo/`
 
 **New Android Version 10 And Upper**
 
-`
-/system/apex/com.android.tzdata/etc/tz/
-`
+`/apex/com.android.tzdata/etc/tz/`
 
 > ⚠️ Root access is required to write to this system directory.  
 > Use with caution and ensure backups before replacing timezone files.
 
 ---
 
-📂 File Structure
-
-| File/Folder         | Description                              |
-|---------------------|------------------------------------------|
-| generator.sh | Main script to download, extract & build |
-| ZoneCompactor.java| Compacts zoneinfo from setup file        |
-| ZoneInfo.java     | Handles zoneinfo structures              |
-| zones/            | Final output directory                   |
-| setup             | Auto-generated zone configuration        |
-
 🧠 Environment Support
 
-| Platform | Status      | Output Destination              |
-|----------|-------------|----------------------------------|
-| Termux   | ✅ Supported | /sdcard/TimezoneFiles         |
-| Linux    | ✅ Supported | tzwork/zones/                 |
+| Platform | Status       | Output Destination    |
+| -------- | ------------ | --------------------- |
+| Termux   | ✅ Supported | /sdcard/TimezoneFiles |
+| Linux    | ✅ Supported | /usr/share/zoneinfo   |
 
 Automatic detection ensures scripts behave appropriately per environment.
-
 
 ---
 
@@ -74,9 +60,11 @@ You can change the tzdata version by editing:
 `VERSION=2025b`
 
 Other options:
+
 - Modify build and output paths
-  
-**Note: Modify Only Version Variable. It is better not to change the other variables.**
+
+> **Note:** Modify Only Version Variable. It is better not to change the other variables.
+
 ---
 
 📚 References
@@ -89,26 +77,50 @@ Other options:
 
 ## 🚀 Getting Started
 
+this is script is auto detect your time zone system.
+
 ### Usage
- **For Android**
- 
+
+**_For Android_**
+
 install **Termux**:
 
-run 
+run
+
 ```bash
-bash generator.sh
+bash DetectFormat.sh
 ```
+
+**Output into `/sdcard/TimezoneFiles`**
+
 Example (with root):
 
+**ZoneInfo format**
+
 ```bash
+cd /sdcard/TimezoneFiles
 su -c cp zoneinfo.dat zoneinfo.idx zoneinfo.version /system/usr/share/zoneinfo/
 ```
-**For Linux (Debian/Ubuntu):**
+
+**TzData format**
+
+```bash
+cd /sdcard/TimezoneFiles
+su -c cp tzdata /apex/com.android.tzdata/etc/tz
+```
+
+---
+
+**_For Linux (Debian/Ubuntu):_**
 
 only run
+
+> **Note:** Check the route to be valid.
+
 ```bash
-bash generator.sh
+bash DetectFormat.sh
 ```
+
 ---
 
 🧑‍💻 Author
@@ -116,7 +128,4 @@ bash generator.sh
 Developed by Asman — blending scripting precision with system-level insight.  
 Open to collaboration, feedback, and suggestions ✨
 
-
 <p align="center">Built with ❤️ for Termux, Linux & Android power users</p>
-
-
