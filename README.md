@@ -98,15 +98,13 @@ Example (with root):
 **ZoneInfo format**
 
 ```bash
-cd /sdcard/TimezoneFiles
-su -c cp zoneinfo.dat zoneinfo.idx zoneinfo.version /system/usr/share/zoneinfo/
+su -c cp /sdcard/TimezoneFiles/* /system/usr/share/zoneinfo/
 ```
 
 **TzData format**
 
 ```bash
-cd /sdcard/TimezoneFiles
-su -c cp tzdata /apex/com.android.tzdata/etc/tz
+su -c cp /sdcard/TimezoneFiles/* /apex/com.android.tzdata/etc/tz
 ```
 
 ---
