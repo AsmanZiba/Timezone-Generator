@@ -25,34 +25,32 @@ echo "🔍 Environment detected: $ENV"
 
 echo "🔧 Checking dependencies..."
 # List of essential tools
-TOOLS="curl lzip clang javac java awk grep"
+declare -A TOOL_PACKAGES=(
+  [curl]="curl"
+  [lzip]="lzip"
+  [clang]="clang"
+  [make]="make"
+  [javac]="openjdk-21"
+  [awk]="gawk"
+  [grep]="grep"
+  [ar]="binutils"
+)
 
-for tool in $TOOLS; do
+for tool in "${!TOOL_PACKAGES[@]}"; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     echo "⚠️ '$tool' is missing."
+    package="${TOOL_PACKAGES[$tool]}"
+    
     if [ "$ENV" = "termux" ]; then
-      pkg install "$tool" -y
+      pkg install "$package" -y
     elif command -v apt-get >/dev/null 2>&1; then
-      sudo apt-get update && sudo apt-get install "$tool" -y
+      sudo apt-get update && sudo apt-get install "$package" -y
     else
-      echo "⚠️ Cannot install '$tool'. Please install it manually."
+      echo "⚠️ Cannot install '$tool' (package: $package). Please install it manually."
       exit 1
     fi
   fi
 done
-
-# Special case: check for 'ar' (part of binutils)
-if ! command -v ar >/dev/null 2>&1; then
-  echo "⚠️ 'ar' is missing. Installing 'binutils'..."
-  if [ "$ENV" = "termux" ]; then
-    pkg install binutils -y
-  elif command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get update && sudo apt-get install binutils -y
-  else
-    echo "⚠️ Cannot install 'binutils'. Please install it manually."
-    exit 1
-  fi
-fi
 
 echo "📥 Downloading tzdb-${VERSION}..."
 mkdir -p "$WORKDIR"
